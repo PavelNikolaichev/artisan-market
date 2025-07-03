@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
     "psycopg2-binary>=2.9.9",
     "pymongo>=4.6.1",
+    "pydantic>=2.11.7",
     "redis>=5.0.1",
     "neo4j>=5.16.0",
     "pandas>=2.1.4",
@@ -63,3 +64,6 @@ line-ending = "auto"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py", "*_test.py"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]

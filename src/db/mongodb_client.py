@@ -17,7 +17,16 @@ class MongoDBClient:
 
     def create_indexes(self):
         """Create necessary indexes."""
-        # TODO: Add indexes as needed
+        # Reviews indexes
+        self.db.get_collection("reviews").create_index("product_id")
+        self.db.get_collection("reviews").create_index("user_id")
+        # Product specs indexes
+        self.db.get_collection("product_specs").create_index("product_id", unique=True)
+        self.db.get_collection("product_specs").create_index("category")
+        # Seller profiles indexes
+        self.db.get_collection("seller_profiles").create_index("seller_id", unique=True)
+        # User preferences indexes
+        self.db.get_collection("user_preferences").create_index("user_id", unique=True)
 
 
 # Singleton instance

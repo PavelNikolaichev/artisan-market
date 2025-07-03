@@ -13,9 +13,9 @@ class DataParser:
         """Parse products CSV file."""
         df = pd.read_csv(DATA_DIR / "products.csv")
         # Convert price to float
-        df["price"] = df["price"].astype(float)
+        df["price"] = df["PRICE"].astype(float)
         # Convert tags to list
-        df["tags"] = df["tags"].apply(lambda x: x.split(","))
+        df["tags"] = df["TAGS"].apply(lambda x: x.split(","))
         return df
 
     @staticmethod
@@ -23,9 +23,9 @@ class DataParser:
         """Parse users CSV file."""
         df = pd.read_csv(DATA_DIR / "users.csv")
         # Convert interests to list
-        df["interests"] = df["interests"].apply(lambda x: x.split(","))
+        df["interests"] = df["INTERESTS"].apply(lambda x: x.split(","))
         # Convert join_date to datetime
-        df["join_date"] = pd.to_datetime(df["join_date"])
+        df["join_date"] = pd.to_datetime(df["JOIN_DATE"])
         return df
 
     @staticmethod
@@ -37,8 +37,8 @@ class DataParser:
     def parse_sellers() -> pd.DataFrame:
         """Parse sellers CSV file."""
         df = pd.read_csv(DATA_DIR / "sellers.csv")
-        df["rating"] = df["rating"].astype(float)
-        df["joined"] = pd.to_datetime(df["joined"])
+        df["rating"] = df["RATING"].astype(float)
+        df["joined"] = pd.to_datetime(df["JOINED"])
         return df
 
 

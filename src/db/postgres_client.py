@@ -1,15 +1,18 @@
 """PostgreSQL connection and utilities."""
 
+import logging
 from contextlib import contextmanager
+
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 
 from src.config import POSTGRES_CONFIG
+from src.db.postgres_bootstrap import Base
+from src.models import *  # Needed for Base metadata
 
-Base = declarative_base()
+logger = logging.getLogger(__name__)
 
 
 class PostgresConnection:
@@ -50,8 +53,25 @@ class PostgresConnection:
 
     def create_tables(self):
         """Create all tables in the database."""
-        # TODO: Implement table creation SQL
-        
+
+        # Reset the db
+        # logger.log(logging.INFO, "Resetting the database...")
+        # with self.get_cursor() as cursor:
+        #     cursor.execute("DROP SCHEMA public CASCADE;")
+        #     cursor.execute("CREATE SCHEMA public;")
+        #     logger.log(logging.INFO, "Database reset successfully.")
+
+        # Base metadata is used to create tables defined in SQLAlchemy models
+        # In theory, should generate all the tables defined in the models
+        logger.log(logging.INFO, "Creating tables...")
+
+        try:
+            Base.metadata.create_all(self.engine)
+            logger.log(logging.INFO, "Tables created successfully.")
+        except Exception as e:
+            logger.log(logging.ERROR, f"Error creating tables: {e}")
+            raise e
+
 
 # Singleton instance
 db = PostgresConnection()

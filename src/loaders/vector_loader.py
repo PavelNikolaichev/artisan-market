@@ -1,7 +1,8 @@
 """Load vector embeddings into pgvector."""
 
-from sentence_transformers import SentenceTransformer
 import numpy as np
+from sentence_transformers import SentenceTransformer
+
 from src.db.postgres_client import db
 from src.utils.data_parser import DataParser
 
@@ -16,10 +17,20 @@ class VectorLoader:
         with db.get_cursor() as cursor:
             cursor.execute("CREATE EXTENSION IF NOT EXISTS vector;")
             cursor.execute("""
-                CREATE TABLE IF NOT EXISTS product_embeddings (
-                    product_id VARCHAR(10) PRIMARY KEY,
-                    description_embedding vector(384)  -- 384 dimensions for MiniLM
-                );
+create table if not exists product_embeddings
+(
+    id serial primary key,
+    product_id varchar unique not null references products on delete cascade,
+    embedding  vector(384) not null,
+    created_at timestamp default '2025-07-03 07:43:02.933642'::timestamp without time zone not null,
+    updated_at timestamp default '2025-07-03 07:43:02.933642'::timestamp without time zone not null
+);
+
+alter table product_embeddings
+    owner to postgres;
+
+create index if not exists ix_product_embeddings_product_id
+    on product_embeddings (product_id);
             """)
 
     def generate_embeddings(self):
@@ -28,23 +39,31 @@ class VectorLoader:
 
         for _, product in products.iterrows():
             # Combine relevant text fields
-            text = f"{product['name']} {product['description']} {' '.join(product['tags'])}"
+            text = f"{product['NAME']} {product['DESCRIPTION']} {' '.join(product['tags'])}"
 
             # Generate embedding
             embedding = self.model.encode(text)
 
             # Store in database
-            self._store_embedding(product["id"], embedding)
+            self._store_embedding(product["ID"], embedding)
 
     def _store_embedding(self, product_id: str, embedding: np.ndarray):
         """Store embedding in pgvector."""
         with db.get_cursor() as cursor:
             cursor.execute(
                 """
-                INSERT INTO product_embeddings (product_id, description_embedding)
+                INSERT INTO product_embeddings (product_id, embedding)
                 VALUES (%s, %s)
                 ON CONFLICT (product_id) DO UPDATE
-                SET description_embedding = EXCLUDED.description_embedding;
+                    SET embedding = EXCLUDED.embedding;
                 """,
                 (product_id, embedding.tolist()),
             )
+
+if __name__ == "__main__":
+    loader = VectorLoader()
+
+    loader.create_vector_extension()
+    loader.generate_embeddings()
+
+    print("Vector embeddings loaded successfully.")

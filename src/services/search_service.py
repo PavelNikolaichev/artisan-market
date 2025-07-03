@@ -1,3 +1,8 @@
+from typing import List, Dict, Any
+
+from src.db.postgres_client import db
+
+
 def semantic_search(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
     """Search products using semantic similarity."""
     # Generate embedding for search query
@@ -7,7 +12,7 @@ def semantic_search(self, query: str, limit: int = 10) -> List[Dict[str, Any]]:
     with db.get_cursor() as cursor:
         cursor.execute(
             """
-            SELECT p.*, 
+            SELECT p.*,
                    1 - (pe.description_embedding <=> %s::vector) as similarity
             FROM products p
             JOIN product_embeddings pe ON p.id = pe.product_id
