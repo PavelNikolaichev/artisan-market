@@ -41,6 +41,12 @@ class DataParser:
         df["joined"] = pd.to_datetime(df["JOINED"])
         return df
 
+    @staticmethod
+    def parse_purchases() -> pd.DataFrame:
+        """Parse purchases CSV file."""
+        df = pd.read_csv(DATA_DIR / "purchases.csv")
+        df["date"] = pd.to_datetime(df["date"])
+        return df
 
 class CachedDataParser(DataParser):
     """Data parser with caching capability."""

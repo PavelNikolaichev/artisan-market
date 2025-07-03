@@ -98,6 +98,50 @@ class RelationalLoader:
                 )
         print(f"Loaded {len(products)} products")
 
+    def load_purchases(self):
+        """Load purchases into PostgreSQL."""
+        purchases = self.parser.parse_purchases()
+
+        # Load purchases as `orders` into PostgreSQL
+        # Firstly group by user_id, product_id, date and sum the quantity
+        # Secondly merge same user_id and date with different product_ids into order items
+        # Insert order items into psql and save their ids
+        # Finally insert orders with user_id, date and order items ids
+
+        purchases = purchases.groupby(['user_id', 'product_id', 'date']).agg({'quantity': 'sum'}).reset_index()
+        grouped_purchases = purchases.groupby(['user_id', 'date']).agg({'product_id': list, 'quantity': list}).reset_index()
+
+        for order in grouped_purchases.itertuples(index=False):
+            user_id = order.user_id
+            date = order.date
+            product_ids = order.product_id
+            quantities = order.quantity
+            id = f"order_{user_id}_{date.strftime('%Y%m%d%H%M%S')}"
+
+            # Insert the order into the orders table
+            with self.db.get_cursor() as cursor:
+                cursor.execute(
+                    """
+                    INSERT INTO orders (id, user_id, created_at)
+                    VALUES (%s, %s, %s) RETURNING id;
+                    """,
+                    (id, user_id, date) # TODO: use new field instead of created_at
+                )
+                order_id = cursor.fetchone()['id']
+
+                # Insert each product into order_items
+                for product_id, quantity in zip(product_ids, quantities):
+                    order_item_id = f"order_item_{order_id}_{product_id}"
+                    cursor.execute(
+                        """
+                        INSERT INTO order_items (id, order_id, product_id, quantity)
+                        VALUES (%s, %s, %s, %s);
+                        """,
+                        (order_item_id, order_id, product_id, quantity)
+                    )
+
+        print(f"Loaded {len(purchases)} purchases")
+
     def load_all(self):
         """Load all data into PostgreSQL."""
         print("Creating tables...")
@@ -114,6 +158,9 @@ class RelationalLoader:
 
         print("Loading products...")
         self.load_products()
+
+        print("Loading purchases...")
+        self.load_purchases()
 
         print("Relational data loading complete!")
 

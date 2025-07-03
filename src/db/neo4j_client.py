@@ -14,6 +14,13 @@ class Neo4jClient:
     def close(self):
         self.driver.close()
 
+    def flush_database(self):
+        """Flush the Neo4j database by dropping all nodes and relationships."""
+        with self.driver.session() as session:
+            session.run("MATCH (n) DETACH DELETE n")
+            session.run("CALL db.clearQueryCaches()")
+
+
     def create_constraints(self):
         """Create uniqueness constraints."""
         with self.driver.session() as session:
@@ -21,16 +28,18 @@ class Neo4jClient:
             session.run("CREATE CONSTRAINT user_id IF NOT EXISTS FOR (u:User) REQUIRE u.id IS UNIQUE")
             # Product constraint
             session.run("CREATE CONSTRAINT product_id IF NOT EXISTS FOR (p:Product) REQUIRE p.id IS UNIQUE")
-            # TODO: Add more constraints
+            # Category constraint
+            session.run("CREATE CONSTRAINT category_name IF NOT EXISTS FOR (c:Category) REQUIRE c.name IS UNIQUE")
+
 
     def add_purchase(self, user_id: str, product_id: str, quantity: int, date: str):
-        """Add a purchase relationship."""
+        """Add a purchase relationship, merging duplicates and summing quantity."""
         with self.driver.session() as session:
             session.run(
                 """
-                MERGE (u:User {id: $user_id})
-                MERGE (p:Product {id: $product_id})
-                CREATE (u)-[:PURCHASED {quantity: $quantity, date: $date}]->(p)
+                MATCH (u:User {id: $user_id})
+                MATCH (p:Product {id: $product_id})
+                CREATE (u)-[:PURCHASED {date: $date, quantity: $quantity}]->(p)
                 """,
                 user_id=user_id,
                 product_id=product_id,
@@ -54,6 +63,19 @@ class Neo4jClient:
                 limit=limit,
             )
             return [record.data() for record in result]
+
+    def merge_product_with_category(self, id: str, name: str, category: str, price: float):
+        """Merge a Product node, Category node, and BELONGS_TO relationship."""
+        with self.driver.session() as session:
+            session.run(
+                """
+                MERGE (p:Product {id: $id})
+                SET p.name = $name, p.category = $category, p.price = $price
+                MERGE (c:Category {name: $category})
+                MERGE (p)-[:BELONGS_TO]->(c)
+                """,
+                {"id": id, "name": name, "category": category, "price": price},
+            )
 
 
 # Singleton instance

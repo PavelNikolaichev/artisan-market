@@ -270,20 +270,25 @@ pytest --cov=src --cov-report=html
 ## Running the Application
 
 ### Load Initial Data
-```bash
-# Using make
-make run-postgres-loader
 
-# Or directly
+[//]: # ([//]: # &#40;## Using make&#41; there is no make)
+
+[//]: # (#make run-postgres-loader)
+```bash
 uv run python -m src.loaders.relational_loader
-uv run python -m src.loaders.document_loader
-uv run python -m src.loaders.graph_loader
 uv run python -m src.loaders.vector_loader
 ```
 
-### Generate Purchase History
+### Generate Purchase History and Reviews
 ```bash
 uv run python -m src.utils.purchase_generator
+uv run python -m src.utils.review_generator
+```
+
+### Load Reviews and Purchases
+```bash
+uv run python -m src.loaders.document_loader
+uv run python -m src.loaders.graph_loader
 ```
 
 ### Start Services
