@@ -18,6 +18,8 @@ dependencies = [
     "click>=8.1.7",
     "rich>=13.7.0",
     "pandas-stubs==2.3.0.250703",
+    "fastapi==0.115.14",
+    "uvicorn[standard]==0.35.0",
 ]
 
 [project.optional-dependencies]

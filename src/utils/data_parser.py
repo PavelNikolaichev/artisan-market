@@ -48,6 +48,7 @@ class DataParser:
         df["date"] = pd.to_datetime(df["date"])
         return df
 
+
 class CachedDataParser(DataParser):
     """Data parser with caching capability."""
 

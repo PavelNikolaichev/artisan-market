@@ -1,4 +1,5 @@
 """Load graph data into Neo4j."""
+
 from src.db.neo4j_client import neo4j_client
 from src.utils.data_parser import DataParser
 
@@ -21,19 +22,19 @@ class GraphLoader:
                 id=row["ID"],
                 name=row["NAME"],
                 category=row["CATEGORY"],
-                price=float(row["price"]),
+                price=float(str(row["price"])),
             )
         print(f"Loaded {len(products)} products and categories into Neo4j")
 
     def load_purchases(self):
         """Load PURCHASED relationships from purchases.csv, deduplicated by user_id, product_id, date."""
         purchases = self.parser.parse_purchases()
-        
+
         for _, row in purchases.iterrows():
             self.client.add_purchase(
                 user_id=row["user_id"],
                 product_id=row["product_id"],
-                quantity=int(row["quantity"]),
+                quantity=int(str(row["quantity"])),
                 date=row["date"].isoformat(),
             )
         print(f"Loaded {len(purchases)} purchase relationships into Neo4j")

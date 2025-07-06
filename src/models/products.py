@@ -29,4 +29,4 @@ class Product(Base):
     items = relationship("OrderItem", back_populates="product")
 
     def __repr__(self):
-        return f"<Product(id={self.id}, name={self.name}, category_id={self.category_id}, price={self.price}, seller_id={self.seller_id}, description={self.description}, tags={self.tags})>"
+        return f"<Product(id={self.id}, name={self.name}, category={self.category}, price={self.price}, seller_id={self.seller_id}, description={self.description}, tags={self.tags})>"

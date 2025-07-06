@@ -20,7 +20,6 @@ class Neo4jClient:
             session.run("MATCH (n) DETACH DELETE n")
             session.run("CALL db.clearQueryCaches()")
 
-
     def create_constraints(self):
         """Create uniqueness constraints."""
         with self.driver.session() as session:
@@ -30,7 +29,6 @@ class Neo4jClient:
             session.run("CREATE CONSTRAINT product_id IF NOT EXISTS FOR (p:Product) REQUIRE p.id IS UNIQUE")
             # Category constraint
             session.run("CREATE CONSTRAINT category_name IF NOT EXISTS FOR (c:Category) REQUIRE c.name IS UNIQUE")
-
 
     def add_purchase(self, user_id: str, product_id: str, quantity: int, date: str):
         """Add a purchase relationship, merging duplicates and summing quantity."""

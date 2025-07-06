@@ -15,7 +15,7 @@ class RedisClient:
     def get_json(self, key: str) -> Any | None:
         """Get JSON data from Redis."""
         data = self.client.get(key)
-        return json.loads(data.decode("utf-8")) if data else None
+        return json.loads(data) if data else None
 
     def set_json(self, key: str, value: Any, ttl: int = CACHE_TTL) -> bool:
         """Set JSON data in Redis with TTL."""
@@ -38,6 +38,8 @@ class RedisClient:
             # first request, set counter with expiry
             self.client.setex(key, RATE_LIMIT_WINDOW, 1)
             return True
+
+        # noinspection PyTypeChecker
         count = int(count)
         if count < RATE_LIMIT_REQUESTS:
             self.client.incr(key)

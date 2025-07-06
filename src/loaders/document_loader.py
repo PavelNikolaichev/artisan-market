@@ -1,6 +1,7 @@
 """Load document data into MongoDB."""
-import os
+
 import json
+
 from src.config import DATA_DIR
 from src.db.mongodb_client import mongo_client
 from src.utils.data_parser import DataParser
@@ -18,7 +19,7 @@ class DocumentLoader:
         col = self.client.get_collection("reviews")
         col.delete_many({})
         path = self.data_dir / "reviews.json"
-        with open(path, "r", encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as f:
             docs = json.load(f)
         if docs:
             col.insert_many(docs)
@@ -37,11 +38,13 @@ class DocumentLoader:
                 "tags": row["tags"],
                 "stock": row.get("STOCK", 0),
             }
-            docs.append({
-                "product_id": row["ID"],
-                "category": row["CATEGORY"],
-                "specs": specs,
-            })
+            docs.append(
+                {
+                    "product_id": row["ID"],
+                    "category": row["CATEGORY"],
+                    "specs": specs,
+                }
+            )
         if docs:
             col.insert_many(docs)
         print(f"Loaded {len(docs)} product_specs into MongoDB")
@@ -55,14 +58,16 @@ class DocumentLoader:
         docs = []
         for _, row in sellers.iterrows():
             portfolio = products[products["SELLER_ID"] == row["ID"]]["ID"].tolist()
-            docs.append({
-                "seller_id": row["ID"],
-                "name": row["NAME"],
-                "specialty": row.get("SPECIALTY"),
-                "rating": row.get("rating"),
-                "joined": row.get("joined"),
-                "portfolio": portfolio,
-            })
+            docs.append(
+                {
+                    "seller_id": row["ID"],
+                    "name": row["NAME"],
+                    "specialty": row.get("SPECIALTY"),
+                    "rating": row.get("rating"),
+                    "joined": row.get("joined"),
+                    "portfolio": portfolio,
+                }
+            )
         if docs:
             col.insert_many(docs)
         print(f"Loaded {len(docs)} seller_profiles into MongoDB")
@@ -74,10 +79,12 @@ class DocumentLoader:
         users = self.parser.parse_users()
         docs = []
         for _, row in users.iterrows():
-            docs.append({
-                "user_id": row["ID"],
-                "preferences": row["interests"],
-            })
+            docs.append(
+                {
+                    "user_id": row["ID"],
+                    "preferences": row["interests"],
+                }
+            )
         if docs:
             col.insert_many(docs)
         print(f"Loaded {len(docs)} user_preferences into MongoDB")

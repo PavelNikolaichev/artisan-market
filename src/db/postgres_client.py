@@ -10,6 +10,8 @@ from sqlalchemy.orm import sessionmaker
 
 from src.config import POSTGRES_CONFIG
 from src.db.postgres_bootstrap import Base
+
+# noinspection PyTypeChecker
 from src.models import *  # Needed for Base metadata
 
 logger = logging.getLogger(__name__)
